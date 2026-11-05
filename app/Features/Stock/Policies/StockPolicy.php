@@ -1,0 +1,4 @@
+<?php
+namespace App\Features\Stock\Policies;
+use App\Models\User;use App\Features\Stock\Models\Stock;
+class StockPolicy {public function view(User $user,Stock $stock):bool{return $user->role==='admin'||$stock->user_id===$user->id;}public function update(User $user,Stock $stock):bool{return $user->role==='member'&&$stock->user_id===$user->id;}public function delete(User $user,Stock $stock):bool{return $this->update($user,$stock);} }

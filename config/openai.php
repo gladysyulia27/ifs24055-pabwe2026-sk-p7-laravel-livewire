@@ -1,8 +1,2 @@
 <?php
-
-return [
-    'endpoint' => rtrim(env('OPENAI_ENDPOINT', 'https://api.openai.com/v1'), '/'),
-    'key' => env('OPENAI_KEY', ''),
-    'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
-];
-
+return ['api_key'=>env('OPENAI_API_KEY'),'base_url'=>env('OPENAI_BASE_URL','https://api.openai.com/v1'),'model'=>env('OPENAI_MODEL','gpt-4o-mini')];
