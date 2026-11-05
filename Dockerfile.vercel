@@ -1,0 +1,107 @@
+# ==============================================================================
+# Stage 1: Node.js Binary for Frontend Asset Build (Vite 8 + Tailwind CSS v4)
+# ==============================================================================
+FROM node:24-bookworm-slim AS node_base
+
+# ==============================================================================
+# Stage 2: PHP 8.4 + Apache Runtime for Vercel Container Functions
+# ==============================================================================
+FROM php:8.4-apache-bookworm
+
+WORKDIR /var/www/html
+
+# Copy Node.js & npm from node_base for building Vite + Tailwind v4 assets
+COPY --from=node_base /usr/local/bin/node /usr/local/bin/node
+COPY --from=node_base /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+
+# Install system libraries & required PHP extensions for Laravel 13 + PhpSpreadsheet
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpng-dev \
+        libjpeg62-turbo-dev \
+        libfreetype6-dev \
+        libzip-dev \
+        libicu-dev \
+        libsqlite3-dev \
+        libpq-dev \
+        libonig-dev \
+        libxml2-dev \
+        unzip \
+        git \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" \
+        bcmath \
+        gd \
+        intl \
+        pcntl \
+        pdo_mysql \
+        pdo_pgsql \
+        pdo_sqlite \
+        zip \
+        opcache \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Enable Apache modules & configure DocumentRoot to /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN a2enmod rewrite headers \
+    && sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && printf '%s\n' \
+        'SetEnvIf X-Forwarded-Proto "https" HTTPS=on' \
+        'ServerName localhost' \
+        > /etc/apache2/conf-available/vercel-proxy.conf \
+    && a2enconf vercel-proxy
+
+# PHP production settings (allow up to 10MB Excel uploads)
+RUN printf '%s\n' \
+        'upload_max_filesize = 12M' \
+        'post_max_size = 12M' \
+        'memory_limit = 512M' \
+        'expose_php = Off' \
+        > /usr/local/etc/php/conf.d/99-vercel.ini
+
+# Copy Composer binary
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Install PHP dependencies first (cached layer)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
+
+# Install Node dependencies (cached layer)
+COPY package.json package-lock.json* .npmrc* ./
+RUN npm install --ignore-scripts
+
+# Copy application source
+COPY . .
+
+# Build frontend assets (after vendor & app are present for Tailwind v4 @source scanning) and clean node_modules
+RUN npm run build && rm -rf node_modules /root/.npm
+
+# Finalize Composer autoloader & discover packages
+RUN rm -f .env \
+    && composer dump-autoload --optimize --no-dev --no-interaction \
+    && mkdir -p storage/app/private/livewire-tmp \
+                storage/framework/cache/data \
+                storage/framework/sessions \
+                storage/framework/views \
+                storage/logs \
+                bootstrap/cache \
+                database \
+    && touch database/preseeded.sqlite \
+    && APP_ENV=local \
+       APP_KEY=base64:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI= \
+       DB_CONNECTION=sqlite \
+       DB_DATABASE=/var/www/html/database/preseeded.sqlite \
+       php artisan migrate:fresh --seed --force --no-interaction \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
+    && chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+
+# Setup entrypoint script (normalize CRLF -> LF in case built from Windows checkout)
+COPY docker/vercel-entrypoint.sh /usr/local/bin/vercel-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/vercel-entrypoint.sh \
+    && chmod +x /usr/local/bin/vercel-entrypoint.sh
+
+EXPOSE 80
+
+CMD ["/usr/local/bin/vercel-entrypoint.sh"]
