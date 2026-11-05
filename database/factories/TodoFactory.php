@@ -19,7 +19,7 @@ class TodoFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {
+    {  
         return [
             'user_id' => User::factory(),
             'title' => fake()->sentence(4),

@@ -135,7 +135,7 @@ OPENAI_MODEL=gpt-4o-mini
 
 1. **Clone & Masuk ke Direktori Proyek**:
    ```bash
-   cd abdullah_ubaid-pabwe2026-latihan-p7-laravel-livewire
+   cd ifs24055-pabwe2026-latihan-p7-laravel-livewire
    ```
 
 2. **Salin `.env` & Generate Key**:
