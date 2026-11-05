@@ -19,6 +19,42 @@ foreach ([
     }
 }
 
+// Serve static build assets and /storage uploads from /tmp/storage/app/public on Vercel
+$uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+if (str_starts_with($uriPath, '/build/')) {
+    $assetFile = __DIR__.'/../public'.$uriPath;
+    if (is_file($assetFile)) {
+        $ext = strtolower(pathinfo($assetFile, PATHINFO_EXTENSION));
+        $mime = match ($ext) {
+            'css' => 'text/css; charset=utf-8',
+            'js', 'mjs' => 'application/javascript; charset=utf-8',
+            'json' => 'application/json; charset=utf-8',
+            'svg' => 'image/svg+xml',
+            'woff2' => 'font/woff2',
+            'woff' => 'font/woff',
+            'ttf' => 'font/ttf',
+            default => mime_content_type($assetFile) ?: 'application/octet-stream',
+        };
+        header("Content-Type: {$mime}");
+        header('Cache-Control: public, max-age=31536000, immutable');
+        readfile($assetFile);
+        exit;
+    }
+} elseif (str_starts_with($uriPath, '/storage/')) {
+    $relPath = ltrim(substr($uriPath, strlen('/storage/')), '/');
+    $storageFile = '/tmp/storage/app/public/'.$relPath;
+    if (! is_file($storageFile)) {
+        $storageFile = __DIR__.'/../storage/app/public/'.$relPath;
+    }
+    if (is_file($storageFile)) {
+        $mime = mime_content_type($storageFile) ?: 'application/octet-stream';
+        header("Content-Type: {$mime}");
+        header('Cache-Control: public, max-age=3600');
+        readfile($storageFile);
+        exit;
+    }
+}
+
 $setEnvDefault = static function (string $key, string $value): void {
     $current = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
     if ($current === false || $current === null || $current === '') {
