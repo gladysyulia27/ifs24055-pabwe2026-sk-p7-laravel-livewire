@@ -105,6 +105,7 @@ pipeline {
                 docker {
                     image 'node:24-alpine'
                     reuseNode true
+                    args '-u root'
                 }
             }
 
@@ -113,6 +114,7 @@ pipeline {
                     set -e
 
                     echo "=== Installing Frontend Dependencies ==="
+                    rm -rf node_modules
                     # package-lock.json may not exist yet; prefer reproducible install when available
                     if [ -f package-lock.json ]; then
                         npm ci --ignore-scripts
@@ -122,6 +124,7 @@ pipeline {
 
                     echo "=== Building Vite Assets ==="
                     npm run build
+                    chmod -R 777 node_modules public/build || true
 
                     echo "=== Frontend Build Completed ==="
                 '''
@@ -269,6 +272,7 @@ pipeline {
                     reuseNode true
 
                     args '''
+                        -u root
                         --entrypoint=""
                         -e HOME=/tmp
                         -e XDG_CACHE_HOME=/tmp/.cache
