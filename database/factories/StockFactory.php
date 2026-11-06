@@ -1,4 +1,34 @@
 <?php
+
 namespace Database\Factories;
-use Illuminate\Database\Eloquent\Factories\Factory;use App\Features\Stock\Enums\StockStatus;
-class StockFactory extends Factory {public function definition():array{$qty=fake()->numberBetween(0,100);$min=5;return ['name'=>fake()->words(2,true),'sku'=>fake()->unique()->bothify('SKU-####??'),'description'=>fake()->sentence(),'quantity'=>$qty,'unit'=>'pcs','price'=>fake()->randomFloat(2,1000,500000),'min_stock'=>$min,'status'=>StockStatus::fromQuantity($qty,$min)];}}
+
+use App\Features\Stock\Enums\StockStatus;
+use App\Features\Stock\Models\Stock;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Stock>
+ */
+class StockFactory extends Factory
+{
+    protected $model = Stock::class;
+
+    public function definition(): array
+    {
+        $qty = fake()->numberBetween(0, 100);
+        $min = 5;
+
+        return [
+            'user_id' => User::factory(),
+            'name' => fake()->words(2, true),
+            'sku' => fake()->unique()->bothify('SKU-####??'),
+            'description' => fake()->sentence(),
+            'quantity' => $qty,
+            'unit' => 'pcs',
+            'price' => fake()->randomFloat(2, 1000, 500000),
+            'min_stock' => $min,
+            'status' => StockStatus::fromQuantity($qty, $min),
+        ];
+    }
+}
