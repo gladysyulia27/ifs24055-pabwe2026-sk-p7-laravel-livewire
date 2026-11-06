@@ -1,0 +1,22 @@
+FROM php:8.3-fpm-alpine
+
+# Install system dependencies & ekstensi PHP (termasuk untuk PhpSpreadsheet)
+RUN apk add --no-cache nginx nodejs npm libpng-dev libzip-dev libxml2-dev oniguruma-dev \
+    && docker-php-ext-install pdo_mysql gd zip xml mbstring bcmath opcache
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+COPY . .
+
+# Install dependency PHP & build aset Vite (Tailwind v4 + Livewire)
+RUN composer install --no-dev --optimize-autoloader \
+    && npm ci \
+    && npm run build
+
+# Siapkan folder permission di /tmp untuk serverless
+RUN chmod -R 777 storage bootstrap/cache
+
+# Jalankan server HTTP pada port 80 (standar Vercel Container Function)
+CMD ["php", "-S", "0.0.0.0:80", "-t", "public"]

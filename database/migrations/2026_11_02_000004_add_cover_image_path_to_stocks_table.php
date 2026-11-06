@@ -8,15 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('stocks', function (Blueprint $table) {
-            $table->string('cover_image_path')->nullable()->after('status');
-        });
+        if (Schema::hasTable('stocks') && ! Schema::hasColumn('stocks', 'cover_image_path')) {
+            Schema::table('stocks', function (Blueprint $table) {
+                $table->string('cover_image_path')->nullable()->after('status');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('stocks', function (Blueprint $table) {
-            $table->dropColumn('cover_image_path');
-        });
+        if (Schema::hasTable('stocks') && Schema::hasColumn('stocks', 'cover_image_path')) {
+            Schema::table('stocks', function (Blueprint $table) {
+                $table->dropColumn('cover_image_path');
+            });
+        }
     }
 };
