@@ -11,11 +11,11 @@
     </div>
 
     <div class="grid lg:grid-cols-3 gap-5">
-        <section class="panel p-5 lg:col-span-2">
+        <section class="panel p-5 lg:col-span-2" aria-label="Deskripsi barang">
             @if($stock->cover_image_path)
                 <img src="/storage/{{ $stock->cover_image_path }}" alt="{{ $stock->name }}" class="w-full max-h-80 object-cover rounded-xl mb-5 border border-slate-200">
             @else
-                <div class="h-48 rounded-xl bg-slate-100 grid place-items-center text-slate-400 mb-5">Belum ada cover image</div>
+                <div class="h-48 rounded-xl bg-slate-100 grid place-items-center text-slate-600 mb-5">Belum ada cover image</div>
             @endif
 
             <div class="flex items-center justify-between mb-2">
@@ -27,12 +27,13 @@
 
             @if($editing)
                 <div class="space-y-3">
-                    <textarea wire:model.live="description" rows="7" class="field font-mono text-sm" placeholder="Tulis deskripsi dengan format Markdown (**tebal**, *miring*, # Heading, - List)..."></textarea>
+                    <label for="detail-description" class="sr-only">Deskripsi barang (Markdown)</label>
+                    <textarea id="detail-description" wire:model.live="description" rows="7" class="field font-mono text-sm" placeholder="Tulis deskripsi dengan format Markdown (**tebal**, *miring*, # Heading, - List)..." aria-label="Deskripsi barang (Markdown)" title="Deskripsi barang (Markdown)"></textarea>
                     @error('description')
                         <p class="text-red-600 text-xs">{{ $message }}</p>
                     @enderror
                     <div class="rounded-xl bg-slate-50 border border-slate-200 p-4">
-                        <p class="text-xs font-semibold text-slate-400 uppercase mb-2">Preview Markdown</p>
+                        <p class="text-xs font-semibold text-slate-600 uppercase mb-2">Preview Markdown</p>
                         <div class="prose max-w-none text-slate-700 text-sm">
                             {!! \Illuminate\Support\Str::markdown($description ?: '*Belum ada teks...*') !!}
                         </div>
@@ -49,13 +50,13 @@
             @endif
         </section>
 
-        <aside class="panel p-5 h-fit">
+        <aside class="panel p-5 h-fit" aria-label="Informasi stok" title="Informasi stok">
             <h2 class="font-bold mb-4">Informasi stok</h2>
             <p class="text-sm text-slate-500">Jumlah tersedia</p>
             <div class="flex items-center gap-3 my-2">
-                <button type="button" wire:click="adjust(-1)" class="btn btn-muted">−</button>
+                <button type="button" wire:click="adjust(-1)" class="btn btn-muted" aria-label="Kurangi stok">−</button>
                 <b class="text-3xl">{{ $stock->quantity }}</b>
-                <button type="button" wire:click="adjust(1)" class="btn btn-muted">＋</button>
+                <button type="button" wire:click="adjust(1)" class="btn btn-muted" aria-label="Tambah stok">＋</button>
                 <span class="text-sm text-slate-500">{{ $stock->unit }}</span>
             </div>
             @error('quantity')
@@ -68,8 +69,8 @@
             </div>
 
             <form wire:submit="saveCover" class="border-t pt-4 mt-3">
-                <label class="text-sm font-semibold">Cover image</label>
-                <input type="file" wire:model="cover" accept="image/*" class="field mt-2">
+                <label for="detail-cover" class="text-sm font-semibold">Cover image</label>
+                <input id="detail-cover" type="file" wire:model="cover" accept="image/*" class="field mt-2" aria-label="Cover image" title="Cover image">
                 <button type="submit" wire:loading.attr="disabled" wire:target="cover,saveCover" class="btn btn-primary w-full mt-3">
                     <span wire:loading.remove wire:target="cover,saveCover">Unggah cover</span>
                     <span wire:loading wire:target="cover,saveCover">Mengunggah...</span>

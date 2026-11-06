@@ -3,7 +3,8 @@
     <h1 class="text-3xl font-bold mt-1 mb-6">Pengguna Member</h1>
 
     <div class="panel p-5">
-        <input wire:model.live.debounce.300ms="search" class="field mb-4" placeholder="Cari nama atau username...">
+        <label for="admin-user-search" class="sr-only">Cari nama atau username</label>
+        <input id="admin-user-search" wire:model.live.debounce.300ms="search" class="field mb-4" placeholder="Cari nama atau username..." aria-label="Cari nama atau username" title="Cari nama atau username">
         <div class="overflow-x-auto">
             <table>
                 <thead>
@@ -36,5 +37,5 @@
         </div>
         <div class="mt-4">{{ $users->links() }}</div>
     </div>
-    <p class="text-xs text-slate-400 mt-3">Mode admin bersifat read-only. Data stok member tidak dapat diubah dari halaman ini.</p>
+    <p class="text-xs text-slate-600 mt-3">Mode admin bersifat read-only. Data stok member tidak dapat diubah dari halaman ini.</p>
 </div>

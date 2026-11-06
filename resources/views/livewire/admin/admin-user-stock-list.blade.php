@@ -26,7 +26,7 @@
                                     @if($stock->cover_image_path)
                                         <img src="/storage/{{ $stock->cover_image_path }}" alt="{{ $stock->name }}" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0">
                                     @else
-                                        <div class="w-10 h-10 rounded-lg bg-slate-100 grid place-items-center text-slate-400 text-xs font-bold shrink-0">IMG</div>
+                                        <div class="w-10 h-10 rounded-lg bg-slate-100 grid place-items-center text-slate-600 text-xs font-bold shrink-0">IMG</div>
                                     @endif
                                     <span class="font-semibold">{{ $stock->name }}</span>
                                 </div>
@@ -50,5 +50,5 @@
         </div>
         <div class="p-4">{{ $stocks->links() }}</div>
     </div>
-    <p class="text-xs text-slate-400 mt-3">Tampilan hanya baca — admin tidak dapat mengubah atau menghapus stok member.</p>
+    <p class="text-xs text-slate-600 mt-3">Tampilan hanya baca — admin tidak dapat mengubah atau menghapus stok member.</p>
 </div>

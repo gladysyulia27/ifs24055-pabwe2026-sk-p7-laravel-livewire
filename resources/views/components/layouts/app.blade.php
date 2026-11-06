@@ -27,15 +27,16 @@
         .sidebar { background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); }
         .nav-link { display:flex; align-items:center; gap:.65rem; border-radius:10px; padding:.65rem .85rem; color:#cbd5e1; font-weight:600; font-size:.9rem; }
         .nav-link.active, .nav-link:hover { background: rgba(255,255,255,.1); color:#fff; }
+        th { color:#334155; }
     </style>
     @livewireStyles
 </head>
 <body>
     <div class="min-h-screen md:flex">
-        <aside class="sidebar text-white md:w-64 p-5">
+        <aside class="sidebar text-white md:w-64 p-5" aria-label="Sidebar navigasi" title="Sidebar navigasi">
             <a href="/" class="text-xl font-bold tracking-tight">Stock<span class="text-blue-300">wise.</span></a>
-            <p class="text-xs text-slate-400 mt-1 mb-8">INVENTORY MANAGEMENT</p>
-            <nav class="space-y-2">
+            <p class="text-xs text-slate-300 mt-1 mb-8">INVENTORY MANAGEMENT</p>
+            <nav class="space-y-2" aria-label="Navigasi utama">
                 @if(auth()->user()->role === 'admin')
                     <a class="nav-link {{ request()->is('admin/users*') ? 'active' : '' }}" href="/admin/users">▦ <span>Pengguna</span></a>
                 @else
@@ -52,7 +53,7 @@
                     @endif
                     <div>
                         <p class="text-sm font-semibold leading-tight">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-slate-400">{{ ucfirst(auth()->user()->role) }}</p>
+                        <p class="text-xs text-slate-300">{{ ucfirst(auth()->user()->role) }}</p>
                     </div>
                 </div>
                 <form method="POST" action="/logout">
