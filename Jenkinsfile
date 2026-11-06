@@ -80,43 +80,18 @@ pipeline {
                         echo "OK: all required PHP extensions are available." . PHP_EOL;
                     '
 
-                    echo "=== Preparing Workspace & Environment ==="
-                    git config --global --add safe.directory "*" || true
-                    mkdir -p storage/framework/cache/data \
-                             storage/framework/sessions \
-                             storage/framework/views \
-                             storage/logs \
-                             bootstrap/cache
-                    chmod -R 775 storage bootstrap/cache || true
-                    if [ ! -f .env ] && [ -f .env.example ]; then
-                        cp .env.example .env
-                    fi
-
                     echo "=== Installing PHP Dependencies (Composer) ==="
 
                     composer install \
                         --prefer-dist \
                         --no-progress \
-                        --optimize-autoloader \
-                        --no-interaction || \
-                    composer update \
-                        --prefer-dist \
-                        --no-progress \
-                        --optimize-autoloader \
-                        --no-interaction
+                        --optimize-autoloader
 
                     echo "=== PHP Dependencies Installed ==="
 
                     echo "=== Composer Audit (fail on vulnerabilities) ==="
-                    if ! composer audit --no-interaction --abandoned=ignore; then
-                        echo "=== Updating dependencies to resolve security advisories ==="
-                        composer update \
-                            --prefer-dist \
-                            --no-progress \
-                            --optimize-autoloader \
-                            --no-interaction || true
-                        composer audit --no-interaction --abandoned=ignore || true
-                    fi
+                    # Exit non-zero jika ada advisory → pipeline FAILURE
+                    composer audit --no-interaction
                     echo "=== Composer Audit OK (no known vulnerabilities) ==="
                 '''
             }
@@ -130,7 +105,6 @@ pipeline {
                 docker {
                     image 'node:24-alpine'
                     reuseNode true
-                    args '-u root'
                 }
             }
 
